@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Study Timer with Break Alert</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: linear-gradient(45deg, #f3ec78, #af4261);
+      color: #fff;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+
+    .container {
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      width: 90%;
+      max-width: 400px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin: 0;
+    }
+
+    .session-duration {
+      font-size: 1.5rem;
+      margin-top: 5px;
+      margin-bottom: 20px;
+    }
+
+    .timer {
+      font-size: 3rem;
+      margin: 20px 0;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 1.2rem;
+      margin: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      color: white;
+      background-color: #ff5722;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #e64a19;
+    }
+
+    @media (max-width: 600px) {
+      .timer {
+        font-size: 2rem;
+      }
+
+      button {
+        padding: 8px 16px;
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1 id="session-title">First Work Period</h1>
+    <div class="session-duration" id="session-duration">25 Minutes</div>
+    <div class="timer" id="timer">25:00</div>
+    <div>
+      <button id="start-btn">Start</button>
+      <button id="pause-btn">Pause</button>
+    </div>
+  </div>
+
+  <!-- صوت التنبيه -->
+  <audio id="alert-sound" src="http://www.sousound.com/music/healing/healing_01.mp3"></audio>
+
+  <script>
+    const workPeriods = [
+      { title: "First Work Period", duration: "25 Minutes", time: 1 * 30 }, // مثال 30 ثانية لفترة الاختبار
+      { title: "Break", duration: "5 Minutes", time: 5 * 60 },
+      { title: "Second Work Period", duration: "30 Minutes", time: 30 * 60 },
+      { title: "Break", duration: "5 Minutes", time: 5 * 60 },
+      { title: "Third Work Period", duration: "35 Minutes", time: 35 * 60 },
+      { title: "Break", duration: "10 Minutes", time: 10 * 60 }
+    ];
+
+    let currentPeriod = 0;
+    let timeRemaining = workPeriods[currentPeriod].time;
+    let timerInterval = null;
+    let isPaused = true;
+    let alertTriggered = false;
+
+    const timerDisplay = document.getElementById("timer");
+    const sessionTitle = document.getElementById("session-title");
+    const sessionDuration = document.getElementById("session-duration");
+    const startButton = document.getElementById("start-btn");
+    const pauseButton = document.getElementById("pause-btn");
+    const alertSound = document.getElementById("alert-sound");
+
+    function updateDisplay() {
+      const minutes = Math.floor(timeRemaining / 60);
+      const seconds = timeRemaining % 60;
+      timerDisplay.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+      sessionTitle.textContent = workPeriods[currentPeriod].title;
+      sessionDuration.textContent = workPeriods[currentPeriod].duration;
+    }
+
+    function startTimer() {
+      if (isPaused) {
+        isPaused = false;
+        timerInterval = setInterval(() => {
+          timeRemaining--;
+
+          if (timeRemaining <= 0) {
+            clearInterval(timerInterval);
+            alertSound.pause(); // إيقاف تشغيل الصوت إذا كان يعمل
+            alertSound.currentTime = 0; // إعادة الصوت إلى البداية
+            currentPeriod = (currentPeriod + 1) % workPeriods.length;
+            timeRemaining = workPeriods[currentPeriod].time;
+            alertTriggered = false;
+            updateDisplay();
+            startTimer(); // تشغيل المؤقت للفترة التالية تلقائيًا
+          } else {
+            handleAlerts();
+            updateDisplay();
+          }
+        }, 1000);
+      }
+    }
+
+    function pauseTimer() {
+      if (!isPaused) {
+        isPaused = true;
+        clearInterval(timerInterval);
+        alertSound.pause(); // إيقاف الصوت عند إيقاف المؤقت
+      }
+    }
+
+    function handleAlerts() {
+      if (timeRemaining <= 10 && workPeriods[currentPeriod].title.includes("Work") && !alertTriggered) {
+        // تشغيل صوت التنبيه كل ثانيتين في آخر 10 ثواني
+        if (timeRemaining % 2 === 0) {
+          alertSound.play();
+        }
+        if (timeRemaining === 0) {
+          alertTriggered = true;
+        }
+      }
+    }
+
+    startButton.addEventListener("click", startTimer);
+    pauseButton.addEventListener("click", pauseTimer);
+
+    updateDisplay(); // Initialize display
+  </script>
+
+</body>
+</html>
