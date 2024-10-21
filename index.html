@@ -119,27 +119,27 @@
     }
 
     function startTimer() {
-  if (isPaused) {
-    isPaused = false;
-    timerInterval = setInterval(() => {
-      timeRemaining--;
+      if (isPaused) {
+        isPaused = false;
+        timerInterval = setInterval(() => {
+          timeRemaining--;
 
-      if (timeRemaining <= 0) {
-        clearInterval(timerInterval);
-        alertSound.pause();
-        alertSound.currentTime = 0;
-        currentPeriod = (currentPeriod + 1) % workPeriods.length;
-        timeRemaining = workPeriods[currentPeriod].time;
-        alertTriggered = false;
-        updateDisplay();
-        startTimer(); // إعادة تشغيل المؤقت للفترة التالية تلقائيًا
-      } else {
-        handleAlerts();
-        updateDisplay();
+          if (timeRemaining <= 0) {
+            clearInterval(timerInterval);
+            alertSound.pause();
+            alertSound.currentTime = 0;
+            currentPeriod = (currentPeriod + 1) % workPeriods.length;
+            timeRemaining = workPeriods[currentPeriod].time;
+            alertTriggered = false;
+            updateDisplay();
+            startTimer(); // إعادة تشغيل المؤقت للفترة التالية تلقائيًا
+          } else {
+            handleAlerts();
+            updateDisplay();
+          }
+        }, 1000);
       }
-    }, 1000);
-  }
-}
+    }
 
     function pauseTimer() {
       if (!isPaused) {
